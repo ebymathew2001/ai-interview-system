@@ -9,13 +9,17 @@ Candidate Profile:
 
 Interview Progress: This is question {current_index} of {total_questions}.
 
-Previous Questions Asked:
+Previous Questions Asked and Answers:
 {history}
 
 Instructions:
-- Ask a single, focused technical question relevant to the candidate's role and declared skills.
-- Vary the topics — do not repeat any topic already covered.
-- Increase difficulty gradually as the interview progresses.
+- If this is question 1, warmly welcome the candidate by name and simply ask them to introduce themselves. Keep it short and natural — just one simple welcoming sentence followed by asking them to introduce themselves. Do not ask multiple things at once."
+- From question 2 onwards, ask focused technical questions relevant to the candidate's role and declared skills.
+- Use the previous questions and answers history to avoid repeating any topic already covered.
+- Sometimes ask a follow-up question based on the candidate's previous answer if the answer was interesting, incomplete, or worth exploring deeper — but do not always follow up, vary between follow-up and new topics.
+- Difficulty must be based on experience level: if experience is less than 1 year ask basic conceptual questions, if 1-3 years ask moderate questions with some depth, if more than 3 years ask advanced and scenario-based questions.
+- Never return the exact same question that was already asked in the history.
+- Increase difficulty gradually as the interview progresses regardless of experience level.
 - Return ONLY the question text. No preamble, no numbering, no quotation marks.
 """
 
@@ -26,6 +30,8 @@ Required Skills:  {skills}
 
 Question Asked:       {question}
 Candidate's Answer:   {answer}
+
+Important Note: This answer was transcribed from speech using an STT model which may have introduced transcription errors especially for technical terms like framework names, annotations, and library names. Be lenient with terminology mistakes — focus on whether the candidate demonstrated conceptual understanding rather than exact wording. For example if they said "Sprint" instead of "Spring" or "transaction analytics" instead of "@Transactional" treat it as a transcription error not a knowledge gap.
 
 Evaluate the answer on a scale of 0–10 and provide brief feedback.
 Return ONLY a valid JSON object — no markdown, no extra text:
