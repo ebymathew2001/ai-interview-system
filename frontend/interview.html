@@ -3,76 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interview — In Progress</title>
-  <link rel="stylesheet" href="/static/css/style.css" />
+  <title>AI Interview — In Progress</title>
+  <link rel="stylesheet" href="/static/css/interview.css" />
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <h1>🤖 AI Interview System</h1>
-      <div id="progress-bar-wrapper">
+  <div class="interview-layout">
+
+    <!-- Left Panel: Candidate Details -->
+    <aside class="candidate-panel">
+      <div class="panel-header">
+        <div class="avatar">👤</div>
+        <h2 id="candidate-name">Loading...</h2>
+        <span class="status-badge">Interview In Progress</span>
+      </div>
+      <div class="panel-details">
+        <div class="detail-item">
+          <span class="detail-label">Role</span>
+          <span class="detail-value" id="candidate-role">—</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Qualification</span>
+          <span class="detail-value" id="candidate-qualification">—</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Experience</span>
+          <span class="detail-value" id="candidate-experience">—</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Skills</span>
+          <span class="detail-value" id="candidate-skills">—</span>
+        </div>
+      </div>
+      <div class="progress-section">
         <div class="progress-label">
-          <span id="question-counter">Loading...</span>
-          <span id="status-text"></span>
+          <span>Progress</span>
+          <span id="question-counter">0 / 5</span>
         </div>
         <div class="progress-bar">
           <div id="progress-fill" class="progress-fill" style="width:0%"></div>
         </div>
       </div>
-    </header>
+    </aside>
 
-    <main class="card interview-card">
-      <!-- Loading -->
-      <div id="loading-state">
-        <div class="spinner"></div>
-        <p>Preparing your interview...</p>
+    <!-- Right Side: Chat Window -->
+    <main class="chat-section">
+
+      <!-- Chat messages area -->
+      <div class="chat-window" id="chat-window">
+        <div class="chat-welcome">
+          <p>🤖 Interview starting, please wait...</p>
+        </div>
       </div>
 
-      <!-- Active question -->
-      <div id="question-state" class="hidden">
-        <div class="question-box">
-          <div class="question-label">Question <span id="q-num"></span></div>
-          <p id="question-text" class="question-text"></p>
-        </div>
+      <!-- Bottom input area -->
+      <div class="chat-input-area">
 
-        <div id="mic-status" class="mic-status idle">
-          <span class="mic-icon">🎙️</span>
-          <span id="mic-label">Press to speak your answer</span>
-        </div>
-
-        <button id="record-btn" class="btn btn-record" onclick="toggleRecording()">
-          🎤 Start Recording
-        </button>
-
-        <div id="transcript-preview" class="transcript-preview hidden">
-          <label>Your answer (transcribed):</label>
+        <!-- Transcript preview -->
+        <div id="transcript-box" class="transcript-box hidden">
           <p id="transcript-text"></p>
-          <button class="btn btn-secondary" onclick="clearAnswer()" style="font-size:0.85rem;padding:0.4rem 0.9rem">
-            🔄 Re-record
+          <button class="btn-rerecord" onclick="clearRecording()">🔄 Re-record</button>
+        </div>
+
+        <!-- Controls -->
+        <div class="input-controls">
+          <button id="mic-btn" class="mic-btn" onclick="toggleRecording()">
+            🎤
+          </button>
+          <div class="mic-label-wrap">
+            <span id="mic-label">Press mic to record your answer</span>
+            <div id="recording-indicator" class="recording-indicator hidden">
+              <span class="rec-dot"></span> Recording...
+            </div>
+          </div>
+          <button id="send-btn" class="send-btn hidden" onclick="submitAnswer()">
+            SEND
           </button>
         </div>
 
-        <div id="submit-area" class="hidden">
-          <button id="submit-btn" class="btn btn-primary" onclick="submitAnswer()" style="width:100%">
-            Submit Answer →
-          </button>
-        </div>
-      </div>
-
-      <!-- Evaluating -->
-      <div id="evaluating-state" class="hidden">
-        <div class="spinner"></div>
-        <p>Evaluating your answer...</p>
-      </div>
-
-      <!-- Complete -->
-      <div id="complete-state" class="hidden">
-        <div class="complete-icon">✅</div>
-        <h2>Interview Complete!</h2>
-        <p>Generating your evaluation report...</p>
-        <div class="spinner" style="margin-top:1rem"></div>
       </div>
     </main>
+
   </div>
 
   <script src="/static/js/interview.js"></script>

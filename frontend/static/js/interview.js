@@ -1,4 +1,4 @@
-/* ── State ──────────────────────────────────────────────────── */
+/* ── State ───────────────────────────────────────────────────── */
 let sessionId         = null;
 let totalQuestions    = 5;
 let currentQIndex     = 0;
@@ -6,34 +6,34 @@ let mediaRecorder     = null;
 let audioChunks       = [];
 let isRecording       = false;
 let currentTranscript = null;
+let currentAudioB64   = null;   // stores latest question audio for replay
 
-/* ── Speech synthesis ───────────────────────────────────────── */
-function speakText(text) {
-  window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.rate = 0.92;
-  utt.pitch = 1.0;
-  window.speechSynthesis.speak(utt);
-}
-
-/* ── Initialise ─────────────────────────────────────────────── */
+/* ── Init ────────────────────────────────────────────────────── */
 async function init() {
   const params = new URLSearchParams(window.location.search);
   sessionId = params.get('session_id');
   if (!sessionId) { window.location.href = '/'; return; }
 
+  // Load candidate details into left panel
   try {
     const res  = await fetch(`/session/${sessionId}`);
     const data = await res.json();
-    if (data.total_questions) totalQuestions = data.total_questions;
+    document.getElementById('candidate-name').textContent          = data.name;
+    document.getElementById('candidate-role').textContent          = data.role;
+    document.getElementById('candidate-qualification').textContent = data.qualification;
+    document.getElementById('candidate-experience').textContent    = data.experience;
+    document.getElementById('candidate-skills').textContent        = data.skills;
+    totalQuestions = 5;
   } catch (_) {}
 
+  // Start interview — first agent call
   await fetchNextQuestion(null);
 }
 
-/* ── Agent call ─────────────────────────────────────────────── */
+/* ── Agent call ──────────────────────────────────────────────── */
 async function fetchNextQuestion(answerText) {
-  showState('loading');
+  // Show typing indicator while waiting
+  showTyping();
 
   const body = {
     session_id:     sessionId,
@@ -50,47 +50,149 @@ async function fetchNextQuestion(answerText) {
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
 
+    removeTyping();
+
     if (data.is_complete) {
-      showState('complete');
-      setTimeout(() => { window.location.href = `/report-page?session_id=${sessionId}`; }, 2800);
+      addSystemMessage('✅ Interview complete! Redirecting to your report...');
+      setTimeout(() => {
+        window.location.href = `/report-page?session_id=${sessionId}`;
+      }, 2500);
       return;
     }
 
     currentQIndex = data.question_index;
     updateProgress(currentQIndex);
-    displayQuestion(data.question_text, currentQIndex);
-    speakText(data.question_text);
-    showState('question');
+
+    // Convert question text to audio via backend TTS
+    const audioB64 = await getAudio(data.question_text);
+    currentAudioB64 = audioB64;
+
+    // Add AI bubble with question text + replay button
+    addAIBubble(data.question_text, audioB64, currentQIndex);
+
+    // Play audio automatically
+    if (audioB64) playAudio(audioB64);
+
   } catch (err) {
-    alert('Connection error. Please refresh the page.\n\n' + err.message);
+    removeTyping();
+    addSystemMessage('⚠️ Connection error. Please refresh.');
+    console.error(err);
   }
 }
 
-/* ── UI helpers ─────────────────────────────────────────────── */
-function displayQuestion(text, idx) {
-  document.getElementById('q-num').textContent = idx;
-  document.getElementById('question-text').textContent = text;
-  document.getElementById('transcript-preview').classList.add('hidden');
-  document.getElementById('submit-area').classList.add('hidden');
-  resetMicUI();
-  currentTranscript = null;
+/* ── TTS ─────────────────────────────────────────────────────── */
+async function getAudio(text) {
+  try {
+    const res  = await fetch('/text-to-audio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    const data = await res.json();
+    return data.audio_base64 || null;
+  } catch (_) {
+    return null;
+  }
 }
 
+function playAudio(base64String) {
+  if (!base64String) return;
+  const audio = new Audio(`data:audio/mp3;base64,${base64String}`);
+  audio.play();
+}
+
+/* ── Chat bubble rendering ───────────────────────────────────── */
+function addAIBubble(text, audioB64, qIndex) {
+  const window_ = document.getElementById('chat-window');
+
+  // Remove welcome message if present
+  const welcome = window_.querySelector('.chat-welcome');
+  if (welcome) welcome.remove();
+
+  const row = document.createElement('div');
+  row.className = 'bubble-row ai';
+
+  const replayId = `audio-${qIndex}`;
+
+  row.innerHTML = `
+    <div class="bubble-icon">🤖</div>
+    <div>
+      <div class="bubble">${text}</div>
+      <div class="bubble-meta">
+        <span class="bubble-label">Question ${qIndex}</span>
+        ${audioB64 ? `<button class="replay-btn" onclick="playAudio('${audioB64}')">🔊 Replay</button>` : ''}
+      </div>
+    </div>
+  `;
+
+  window_.appendChild(row);
+  scrollToBottom();
+}
+
+function addCandidateBubble(text) {
+  const window_ = document.getElementById('chat-window');
+
+  const row = document.createElement('div');
+  row.className = 'bubble-row candidate';
+  row.innerHTML = `
+    <div>
+      <div class="bubble">${text}</div>
+      <div class="bubble-meta" style="justify-content:flex-end">
+        <span class="bubble-label">You</span>
+      </div>
+    </div>
+    <div class="bubble-icon">👤</div>
+  `;
+
+  window_.appendChild(row);
+  scrollToBottom();
+}
+
+function addSystemMessage(text) {
+  const window_ = document.getElementById('chat-window');
+  const p = document.createElement('p');
+  p.style.cssText = 'text-align:center;color:#94a3b8;font-size:0.85rem;margin:0.5rem 0';
+  p.textContent = text;
+  window_.appendChild(p);
+  scrollToBottom();
+}
+
+function showTyping() {
+  const window_ = document.getElementById('chat-window');
+  const row = document.createElement('div');
+  row.className = 'bubble-row ai typing-bubble';
+  row.id = 'typing-indicator';
+  row.innerHTML = `
+    <div class="bubble-icon">🤖</div>
+    <div class="bubble">
+      <div class="typing-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  `;
+  window_.appendChild(row);
+  scrollToBottom();
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+function scrollToBottom() {
+  const w = document.getElementById('chat-window');
+  w.scrollTop = w.scrollHeight;
+}
+
+/* ── Progress ────────────────────────────────────────────────── */
 function updateProgress(current) {
   document.getElementById('question-counter').textContent =
-    `Question ${current} of ${totalQuestions}`;
+    `${current} / ${totalQuestions}`;
   const pct = ((current - 1) / totalQuestions) * 100;
   document.getElementById('progress-fill').style.width = `${pct}%`;
 }
 
-function showState(name) {
-  ['loading', 'question', 'evaluating', 'complete'].forEach(s => {
-    document.getElementById(`${s}-state`).classList.add('hidden');
-  });
-  document.getElementById(`${name}-state`).classList.remove('hidden');
-}
-
-/* ── Recording ──────────────────────────────────────────────── */
+/* ── Recording ───────────────────────────────────────────────── */
 async function toggleRecording() {
   isRecording ? stopRecording() : await startRecording();
 }
@@ -108,13 +210,11 @@ async function startRecording() {
     mediaRecorder.start();
     isRecording = true;
 
-    const btn = document.getElementById('record-btn');
-    btn.textContent = '⏹ Stop Recording';
-    btn.classList.add('recording');
+    document.getElementById('mic-btn').classList.add('recording');
     document.getElementById('mic-label').textContent = 'Recording… click to stop';
-    document.getElementById('mic-status').className = 'mic-status recording';
+    document.getElementById('recording-indicator').classList.remove('hidden');
   } catch (_) {
-    alert('Microphone permission denied. Please allow access and try again.');
+    alert('Microphone permission denied. Please allow access.');
   }
 }
 
@@ -122,10 +222,9 @@ function stopRecording() {
   if (mediaRecorder && isRecording) {
     isRecording = false;
     mediaRecorder.stop();
-    const btn = document.getElementById('record-btn');
-    btn.textContent = 'Processing…';
-    btn.disabled = true;
-    document.getElementById('mic-label').textContent = 'Processing audio…';
+    document.getElementById('mic-btn').classList.remove('recording');
+    document.getElementById('mic-label').textContent = 'Processing audio...';
+    document.getElementById('recording-indicator').classList.add('hidden');
   }
 }
 
@@ -140,38 +239,38 @@ async function processAudio() {
     const data = await res.json();
 
     currentTranscript = data.transcript;
+
+    // Show transcript preview at bottom
     document.getElementById('transcript-text').textContent = currentTranscript;
-    document.getElementById('transcript-preview').classList.remove('hidden');
-    document.getElementById('submit-area').classList.remove('hidden');
+    document.getElementById('transcript-box').classList.remove('hidden');
+    document.getElementById('send-btn').classList.remove('hidden');
+    document.getElementById('mic-label').textContent = 'Press mic to record your answer';
   } catch (_) {
-    alert('Transcription failed. Please try recording again.');
-  } finally {
-    resetMicUI();
+    alert('Transcription failed. Please try again.');
+    document.getElementById('mic-label').textContent = 'Press mic to record your answer';
   }
 }
 
-function resetMicUI() {
-  isRecording = false;
-  const btn = document.getElementById('record-btn');
-  btn.textContent = '🎤 Start Recording';
-  btn.classList.remove('recording');
-  btn.disabled = false;
-  document.getElementById('mic-label').textContent = 'Press to speak your answer';
-  document.getElementById('mic-status').className = 'mic-status idle';
-}
-
-function clearAnswer() {
+function clearRecording() {
   currentTranscript = null;
-  document.getElementById('transcript-preview').classList.add('hidden');
-  document.getElementById('submit-area').classList.add('hidden');
-  resetMicUI();
+  document.getElementById('transcript-box').classList.add('hidden');
+  document.getElementById('send-btn').classList.add('hidden');
+  document.getElementById('mic-label').textContent = 'Press mic to record your answer';
 }
 
+/* ── Submit answer ───────────────────────────────────────────── */
 async function submitAnswer() {
   if (!currentTranscript) return;
+
   const answer = currentTranscript;
-  currentTranscript = null;
-  showState('evaluating');
+
+  // Add candidate bubble to chat
+  addCandidateBubble(answer);
+
+  // Clear input area
+  clearRecording();
+
+  // Fetch next question
   await fetchNextQuestion(answer);
 }
 
