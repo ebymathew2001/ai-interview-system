@@ -23,7 +23,7 @@ async function init() {
     document.getElementById('candidate-qualification').textContent = data.qualification;
     document.getElementById('candidate-experience').textContent    = data.experience;
     document.getElementById('candidate-skills').textContent        = data.skills;
-    totalQuestions = 5;
+    totalQuestions = data.total_questions;  // ← reads from DB
   } catch (_) {}
 
   // Start interview — first agent call
@@ -128,20 +128,19 @@ function addAIBubble(text, audioB64, qIndex) {
   window_.appendChild(row);
   scrollToBottom();
 }
-
 function addCandidateBubble(text) {
   const window_ = document.getElementById('chat-window');
 
   const row = document.createElement('div');
   row.className = 'bubble-row candidate';
   row.innerHTML = `
-    <div>
+    <div class="bubble-icon">👤</div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end;">
       <div class="bubble">${text}</div>
-      <div class="bubble-meta" style="justify-content:flex-end">
+      <div class="bubble-meta">
         <span class="bubble-label">You</span>
       </div>
     </div>
-    <div class="bubble-icon">👤</div>
   `;
 
   window_.appendChild(row);

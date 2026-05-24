@@ -56,6 +56,7 @@ def get_session(session_id: str, db: Session = Depends(get_db)):
         role=c.role,
         session_id=session_id,
         status=db_session.status,
+        total_questions=db_session.total_questions,
     )
 
 

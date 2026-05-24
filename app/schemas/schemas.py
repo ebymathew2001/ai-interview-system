@@ -27,7 +27,7 @@ class CandidateProfileResponse(BaseModel):
     role:          str
     session_id:    str
     status:        str
-
+    total_questions: int
 
 # ── Agent ────────────────────────────────────────────────────────────────────
 

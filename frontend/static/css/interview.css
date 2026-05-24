@@ -108,7 +108,7 @@ body {
   transition: width 0.4s ease;
 }
 
-/* ── Chat Section ─────────────────────────────────────────────── */
+/* ── Chat Section ────────────────────────────────────────────── */
 .chat-section {
   flex: 1;
   display: flex;
@@ -133,35 +133,36 @@ body {
   margin: auto;
 }
 
-/* ── Chat Bubbles ─────────────────────────────────────────────── */
+/* ── Bubble rows ─────────────────────────────────────────────── */
 .bubble-row {
   display: flex;
   align-items: flex-end;
   gap: 0.5rem;
 }
 
-/* AI question — left side */
 .bubble-row.ai {
   justify-content: flex-start;
+  flex-direction: row;
 }
 
-/* Candidate answer — right side */
 .bubble-row.candidate {
   justify-content: flex-end;
+  flex-direction: row-reverse;
 }
 
+/* ── Bubble icon ─────────────────────────────────────────────── */
 .bubble-icon {
   font-size: 1.5rem;
   flex-shrink: 0;
 }
 
+/* ── Bubble base ─────────────────────────────────────────────── */
 .bubble {
   max-width: 65%;
   padding: 0.85rem 1.1rem;
   border-radius: 16px;
   font-size: 0.93rem;
   line-height: 1.55;
-  position: relative;
 }
 
 /* AI bubble */
@@ -177,8 +178,10 @@ body {
   background: #2563eb;
   color: #fff;
   border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 16px;
 }
 
+/* ── Bubble meta ─────────────────────────────────────────────── */
 .bubble-meta {
   display: flex;
   align-items: center;
@@ -186,12 +189,16 @@ body {
   margin-top: 0.4rem;
 }
 
+.bubble-row.candidate .bubble-meta {
+  justify-content: flex-end;
+}
+
 .bubble-label {
   font-size: 0.72rem;
   color: #94a3b8;
 }
 
-/* Replay button */
+/* ── Replay button ───────────────────────────────────────────── */
 .replay-btn {
   background: none;
   border: 1px solid #e2e8f0;
@@ -204,7 +211,7 @@ body {
 }
 .replay-btn:hover { background: #f1f5f9; }
 
-/* Typing indicator */
+/* ── Typing indicator ────────────────────────────────────────── */
 .typing-bubble .bubble {
   background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
@@ -232,7 +239,7 @@ body {
   30% { transform: translateY(-6px); }
 }
 
-/* ── Input Area ───────────────────────────────────────────────── */
+/* ── Input Area ──────────────────────────────────────────────── */
 .chat-input-area {
   background: #fff;
   border-top: 1.5px solid #e2e8f0;
