@@ -10,7 +10,6 @@ from app.nodes.generate_report  import generate_report_node
 def _route_after_check(state: InterviewState) -> str:
     return "generate_report" if state["is_complete"] else "generate_question"
 
-
 def build_interview_graph() -> StateGraph:
     wf = StateGraph(InterviewState)
 
@@ -21,17 +20,24 @@ def build_interview_graph() -> StateGraph:
     wf.add_node("generate_report",   generate_report_node)
 
     wf.set_entry_point("load_candidate")
-    wf.add_edge("load_candidate",    "generate_question")
-    wf.add_edge("generate_question", END)           # pause; caller returns question to user
-    wf.add_edge("evaluate_answer",   "check_completion")
+
+    wf.add_edge("load_candidate",   "generate_question")
+    wf.add_edge("generate_question", "evaluate_answer")  # ← connect forward
+    wf.add_edge("evaluate_answer",  "check_completion")
+
     wf.add_conditional_edges(
         "check_completion",
         _route_after_check,
-        {"generate_question": "generate_question", "generate_report": "generate_report"},
+        {
+            "generate_question": "generate_question",
+            "generate_report":   "generate_report",
+        },
     )
+
     wf.add_edge("generate_report", END)
 
     return wf
 
 
-interview_graph = build_interview_graph()
+
+interview_graph = build_interview_graph().compile()
