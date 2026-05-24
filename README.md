@@ -1,0 +1,1 @@
+echo "# AI Interview System" > README.md
