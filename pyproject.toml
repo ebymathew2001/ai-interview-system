@@ -14,6 +14,7 @@ dependencies = [
     "pydantic-settings>=2.14.1",
     "python-dotenv>=1.2.2",
     "python-multipart>=0.0.29",
+    "sarvamai>=0.1.28",
     "sqlalchemy>=2.0.49",
     "uvicorn[standard]>=0.47.0",
 ]
