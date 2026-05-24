@@ -33,6 +33,7 @@ class InterviewSession(Base):
     report    = relationship("Report", back_populates="session", uselist=False)
 
 
+
 class QuestionAnswer(Base):
     __tablename__ = "questions_answers"
 
