@@ -245,8 +245,7 @@ async function processAudio() {
     document.getElementById('send-btn').classList.remove('hidden');
     document.getElementById('mic-label').textContent = 'Press mic to record your answer';
   } catch (_) {
-    alert('Transcription failed. Please try again.');
-    document.getElementById('mic-label').textContent = 'Press mic to record your answer';
+    document.getElementById('mic-label').textContent = '⚠️ Audio could not be transcribed. Please re-record.';
   }
 }
 
