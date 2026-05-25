@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     sarvam_api_key: str = "" 
     database_url: str = "sqlite:///./interview.db"
-    total_questions: int = 3
+    total_questions: int = 2
     llm_model: str = "llama-3.3-70b-versatile"
 
     class Config:
