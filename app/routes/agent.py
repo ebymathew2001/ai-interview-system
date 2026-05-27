@@ -27,23 +27,22 @@ async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_
         if db_session.status == "completed":
             raise HTTPException(status_code=400, detail="Interview already completed")
 
-        c = db_session.candidate
         initial: InterviewState = {
-            "session_id":       sid,
-            "candidate_id":     c.id,
-            "candidate_name":   c.name,
-            "qualification":    c.qualification,
-            "experience":       c.experience,
-            "skills":           c.skills,
-            "role":             c.role,
-            "total_questions":  db_session.total_questions,
-            "current_index":    0,
-            "question_history": [],
-            "current_question": "",
-            "answer_text":      None,
-            "is_complete":      False,
-            "report":           None,
-        }
+        "session_id":       sid,
+        "candidate_id":     0,    
+        "candidate_name":   "",  
+        "qualification":    "",   
+        "experience":       "",   
+        "skills":           "",   
+        "role":             "",  
+        "total_questions":  0,    
+        "current_index":    0,
+        "question_history": [],
+        "current_question": "",
+        "answer_text":      None,
+        "is_complete":      False,
+        "report":           None,
+    }
         #invoke
         state = interview_graph.invoke(initial)
         _states[sid] = state
