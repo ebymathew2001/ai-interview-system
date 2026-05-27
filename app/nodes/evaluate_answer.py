@@ -35,7 +35,6 @@ def evaluate_answer_node(state: InterviewState) -> InterviewState:
         "question_index": state["current_index"] + 1,
     }
     return {
-        **state,
         "question_history": state["question_history"] + [qa_entry],
         "current_index":    state["current_index"] + 1,
         "answer_text":      None,

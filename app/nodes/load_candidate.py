@@ -19,7 +19,6 @@ def load_candidate_node(state: InterviewState) -> InterviewState:
         c = db_session.candidate
 
         return {
-            **state,
             "candidate_id":    c.id,
             "candidate_name":  c.name,
             "qualification":   c.qualification,
