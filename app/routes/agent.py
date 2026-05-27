@@ -1,16 +1,11 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
 from app.core.database import get_db
 from app.models.models import InterviewSession, QuestionAnswer, Report
 from app.schemas.schemas import AgentRespondRequest, AgentRespondResponse
 from app.graph.state import InterviewState
-from app.nodes.load_candidate    import load_candidate_node
-from app.nodes.generate_question import generate_question_node
-from app.nodes.evaluate_answer   import evaluate_answer_node
-from app.nodes.check_completion  import check_completion_node
-from app.nodes.generate_report   import generate_report_node
+from app.graph.graph import interview_graph
 
 router = APIRouter()
 
@@ -22,7 +17,7 @@ _states: dict[str, InterviewState] = {}
 async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_db)):
     sid = payload.session_id
 
-    # ── FIRST CALL: no answer, no existing state ─────────────────────────────
+    # ── FIRST CALL:
     if sid not in _states:
         db_session = db.query(InterviewSession).filter(
             InterviewSession.session_id == sid
@@ -49,9 +44,8 @@ async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_
             "is_complete":      False,
             "report":           None,
         }
-
-        state = load_candidate_node(initial)
-        state = generate_question_node(state)
+        #invoke
+        state = interview_graph.invoke(initial)
         _states[sid] = state
 
         return AgentRespondResponse(
@@ -69,27 +63,33 @@ async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_
         raise HTTPException(status_code=422, detail="answer_text is required for subsequent calls")
 
     state = {**state, "answer_text": payload.answer_text}
-    state = evaluate_answer_node(state)
 
-    # Persist the evaluated Q&A row immediately
-    last_qa = state["question_history"][-1]
-    db.add(QuestionAnswer(
-        session_id=sid,
-        question_index=last_qa["question_index"],
-        question_text=last_qa["question"],
-        answer_text=last_qa["answer"],
-        score=last_qa["score"],
-        feedback=last_qa["feedback"],
-    ))
-    db.commit()
+    #invoke 
+    state = interview_graph.invoke(state)
 
-    state = check_completion_node(state)
+   # persist Q&A if new entry was added
+    if state["question_history"]:
+        last_qa = state["question_history"][-1]
+        existing = db.query(QuestionAnswer).filter(
+            QuestionAnswer.session_id == sid,
+            QuestionAnswer.question_index == last_qa["question_index"]
+        ).first()
+        if not existing:
+            db.add(QuestionAnswer(
+                session_id=sid,
+                question_index=last_qa["question_index"],
+                question_text=last_qa["question"],
+                answer_text=last_qa["answer"],
+                score=last_qa["score"],
+                feedback=last_qa["feedback"],
+            ))
+            db.commit()
 
+    
+    # interview complete
     if state["is_complete"]:
-        # Generate and persist report
-        state = generate_report_node(state)
+      
         rpt = state["report"]
-
         db.add(Report(
             session_id=sid,
             overall_score=rpt["overall_score"],
@@ -113,7 +113,7 @@ async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_
             is_complete=True,
         )
 
-    state = generate_question_node(state)
+    
     _states[sid] = state
 
     return AgentRespondResponse(
