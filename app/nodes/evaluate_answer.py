@@ -27,16 +27,17 @@ def evaluate_answer_node(state: InterviewState) -> InterviewState:
     except (json.JSONDecodeError, ValueError, KeyError):
         score, feedback = 5.0, "Answer evaluated."
 
+    next_index = state["current_index"] + 1
+
     qa_entry = {
         "question":       state["current_question"],
         "answer":         state["answer_text"] or "",
         "score":          score,
         "feedback":       feedback,
-        "question_index": state["current_index"] + 1,
+        "question_index": next_index,
     }
     return {
-        **state,
         "question_history": state["question_history"] + [qa_entry],
-        "current_index":    state["current_index"] + 1,
+        "current_index":    next_index,
         "answer_text":      None,
     }

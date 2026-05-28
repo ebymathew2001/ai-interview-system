@@ -42,7 +42,6 @@ def generate_report_node(state: InterviewState) -> InterviewState:
         rec, strengths, weaknesses = "maybe", "Completed the interview", "Further evaluation needed"
 
     return {
-        **state,
         "report": {
             "overall_score":       round(avg, 2),
             "hire_recommendation": rec,

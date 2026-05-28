@@ -30,6 +30,6 @@ def generate_question_node(state: InterviewState) -> InterviewState:
     response = llm.invoke(prompt)
 
     return {
-        **state,
+        
         "current_question": response.content.strip(),
     }

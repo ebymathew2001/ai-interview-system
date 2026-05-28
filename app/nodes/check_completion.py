@@ -4,6 +4,5 @@ from app.graph.state import InterviewState
 def check_completion_node(state: InterviewState) -> InterviewState:
     """Mark the interview complete once all questions have been answered."""
     return {
-        **state,
-        "is_complete": state["current_index"] >= state["total_questions"],
+        "is_complete": state["current_index"] >= state["total_questions"]
     }
