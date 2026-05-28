@@ -38,8 +38,8 @@ class AgentRespondRequest(BaseModel):
 
 
 class AgentRespondResponse(BaseModel):
-    question_text:  Optional[str]
-    question_index: Optional[int]
+    question_text:  Optional[str] = None
+    question_index: Optional[int] = None
     is_complete:    bool
 
 
@@ -70,3 +70,6 @@ class ReportResponse(BaseModel):
     weaknesses:         str
     total_questions:    int
     answers:            list[dict]
+
+
+

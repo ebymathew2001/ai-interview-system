@@ -83,7 +83,7 @@ async function fetchNextQuestion(answerText) {
 /* ── TTS ─────────────────────────────────────────────────────── */
 async function getAudio(text) {
   try {
-    const res  = await fetch('/text-to-audio', {
+    const res = await fetch('/audio/text-to-audio', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
@@ -233,7 +233,7 @@ async function processAudio() {
   formData.append('audio', blob, 'recording.webm');
 
   try {
-    const res  = await fetch('/audio-to-text', { method: 'POST', body: formData });
+    const res = await fetch('/audio/audio-to-text', { method: 'POST', body: formData });
     if (!res.ok) throw new Error();
     const data = await res.json();
 

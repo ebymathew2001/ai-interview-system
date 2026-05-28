@@ -59,29 +59,3 @@ def get_session(session_id: str, db: Session = Depends(get_db)):
         total_questions=db_session.total_questions,
     )
 
-
-@router.post("/{session_id}/answer", summary="Persist a single evaluated Q&A row")
-def save_answer(
-    session_id: str,
-    question_index: int,
-    question_text: str,
-    answer_text: str,
-    score: float,
-    feedback: str,
-    db: Session = Depends(get_db),
-):
-    """
-    Utility endpoint — the agent route calls this logic internally.
-    Exposed here per the API spec for direct Postman testing.
-    """
-    row = QuestionAnswer(
-        session_id=session_id,
-        question_index=question_index,
-        question_text=question_text,
-        answer_text=answer_text,
-        score=score,
-        feedback=feedback,
-    )
-    db.add(row)
-    db.commit()
-    return {"saved": True}
