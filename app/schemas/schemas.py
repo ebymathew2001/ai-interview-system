@@ -1,15 +1,15 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel , Field
 
 
 # ── Session ──────────────────────────────────────────────────────────────────
 
 class CandidateCreate(BaseModel):
-    name:          str
-    qualification: str
-    experience:    str
-    skills:        str
-    role:          str
+     name:          str = Field(..., max_length=100)
+     qualification: str = Field(..., max_length=200)
+     experience:    str = Field(..., max_length=100)
+     skills:        str = Field(..., max_length=500)
+     role:          str = Field(..., max_length=100)
 
 
 class SessionCreateResponse(BaseModel):
@@ -33,7 +33,7 @@ class CandidateProfileResponse(BaseModel):
 
 class AgentRespondRequest(BaseModel):
     session_id:     str
-    answer_text:    Optional[str] = None
+    answer_text:    Optional[str] = Field(None, max_length=2000)
     question_index: Optional[int] = None
 
 

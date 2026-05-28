@@ -1,5 +1,6 @@
 import base64
 import io
+from fastapi import HTTPException
 from sarvamai import SarvamAI
 from app.core.config import settings
 
@@ -18,4 +19,4 @@ async def synthesize_speech(text: str) -> str:
         return response.audios[0]
     except Exception as e:
         print(f"TTS error: {e}")
-        return ""
+        raise HTTPException(status_code=502, detail="TTS service unavailable")
