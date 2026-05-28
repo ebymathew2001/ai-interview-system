@@ -4,7 +4,7 @@ from app.core.database import SessionLocal
 from app.models.models import InterviewSession
 
 
-def load_candidate_node(state: InterviewState) -> InterviewState:
+def load_candidate_node(state: InterviewState) -> dict:
     """
     Fetch candidate profile from DB using session_id in state.
     Initialise interview counters and history.

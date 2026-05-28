@@ -5,7 +5,7 @@ from app.graph.prompts import ANSWER_EVALUATION_PROMPT
 from app.core.config import settings
 
 
-def evaluate_answer_node(state: InterviewState) -> InterviewState:
+def evaluate_answer_node(state: InterviewState) -> dict:
     """Evaluate the candidate's answer with LLM scoring."""
     llm = ChatGroq(
         groq_api_key=settings.groq_api_key,
