@@ -5,7 +5,7 @@ from app.graph.prompts import REPORT_GENERATION_PROMPT
 from app.core.config import settings
 
 
-def generate_report_node(state: InterviewState) -> InterviewState:
+def generate_report_node(state: InterviewState) -> dict:
     """Generate the final hire/reject report with LLM analysis."""
     history = state["question_history"]
     avg     = sum(qa["score"] for qa in history) / len(history) if history else 0.0

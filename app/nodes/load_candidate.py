@@ -2,7 +2,7 @@ from app.graph.state import InterviewState
 from app.core.config import settings
 
 
-def load_candidate_node(state: InterviewState) -> InterviewState:
+def load_candidate_node(state: InterviewState) -> dict:
     """
     Initialise interview counters and history.
     Candidate profile data is already present in state (populated by the route

@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.get("/{session_id}", response_model=ReportResponse, summary="Fetch final evaluation report")
-def get_report(session_id: str, db: Session = Depends(get_db)):
+def get_report(session_id: str, db: Session = Depends(get_db))-> ReportResponse:
     db_session = db.query(InterviewSession).filter(
         InterviewSession.session_id == session_id
     ).first()

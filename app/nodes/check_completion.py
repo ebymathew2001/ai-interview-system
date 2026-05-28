@@ -1,7 +1,7 @@
 from app.graph.state import InterviewState
 
 
-def check_completion_node(state: InterviewState) -> InterviewState:
+def check_completion_node(state: InterviewState) -> dict:
     """Mark the interview complete once all questions have been answered."""
     return {
         **state,

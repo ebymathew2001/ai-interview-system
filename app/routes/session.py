@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.post("/create", response_model=SessionCreateResponse, summary="Register candidate and open session")
-def create_session(payload: CandidateCreate, db: Session = Depends(get_db)):
+def create_session(payload: CandidateCreate, db: Session = Depends(get_db))-> SessionCreateResponse:
     candidate = Candidate(**payload.model_dump())
     db.add(candidate)
     db.commit()
@@ -39,7 +39,7 @@ def create_session(payload: CandidateCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{session_id}", response_model=CandidateProfileResponse, summary="Fetch candidate profile for a session")
-def get_session(session_id: str, db: Session = Depends(get_db)):
+def get_session(session_id: str, db: Session = Depends(get_db)) -> CandidateProfileResponse:
     db_session = db.query(InterviewSession).filter(
         InterviewSession.session_id == session_id
     ).first()

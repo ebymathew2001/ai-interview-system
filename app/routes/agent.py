@@ -19,7 +19,7 @@ _states: dict[str, InterviewState] = {}
 
 
 @router.post("/respond", response_model=AgentRespondResponse, summary="Central interview loop")
-async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_db)):
+async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_db)) -> AgentRespondResponse:
     sid = payload.session_id
 
     # ── FIRST CALL: no answer, no existing state ─────────────────────────────

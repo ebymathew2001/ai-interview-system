@@ -4,7 +4,7 @@ from app.graph.prompts import QUESTION_GENERATION_PROMPT
 from app.core.config import settings
 
 
-def generate_question_node(state: InterviewState) -> InterviewState:
+def generate_question_node(state: InterviewState) -> dict:
     """Generate the next interview question via LLM."""
     history_lines = "\n".join(
         f"Q{qa['question_index']}: {qa['question']}"
