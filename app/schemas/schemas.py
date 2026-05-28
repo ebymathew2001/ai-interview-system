@@ -73,9 +73,3 @@ class ReportResponse(BaseModel):
 
 
 
-class SaveAnswerRequest(BaseModel):
-    question_index: int
-    question_text:  str
-    answer_text:    str
-    score:          float
-    feedback:       str

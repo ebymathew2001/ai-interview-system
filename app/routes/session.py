@@ -7,7 +7,6 @@ from app.core.database import get_db
 from app.models.models import Candidate, InterviewSession, QuestionAnswer
 from app.schemas.schemas import (
     CandidateCreate,
-    SaveAnswerRequest,
     SessionCreateResponse,
     CandidateProfileResponse,
 )
@@ -60,25 +59,3 @@ def get_session(session_id: str, db: Session = Depends(get_db)):
         total_questions=db_session.total_questions,
     )
 
-
-@router.post("/{session_id}/answer", summary="Persist a single evaluated Q&A row")
-def save_answer(
-    session_id: str,
-    payload:    SaveAnswerRequest, 
-    db: Session = Depends(get_db),
-)-> dict:
-    """
-    Utility endpoint — the agent route calls this logic internally.
-    Exposed here per the API spec for direct Postman testing.
-    """
-    row = QuestionAnswer(
-        session_id=    session_id,
-        question_index=payload.question_index,
-        question_text= payload.question_text,
-        answer_text=   payload.answer_text,
-        score=         payload.score,
-        feedback=      payload.feedback,
-    )
-    db.add(row)
-    db.commit()
-    return {"saved": True}
