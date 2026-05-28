@@ -24,7 +24,7 @@ app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 
 app.include_router(session.router, prefix="/session", tags=["Session"])
 app.include_router(agent.router, prefix="/agent",   tags=["Agent"])
-app.include_router(audio.router,                    tags=["Audio"])
+app.include_router(audio.router, prefix="/audio" ,  tags=["Audio"])
 app.include_router(report.router, prefix="/report", tags=["Report"])
 
 
