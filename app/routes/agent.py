@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
@@ -97,11 +97,8 @@ async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_
             weaknesses=rpt["weaknesses"],
         ))
 
-        db_sess = db.query(InterviewSession).filter(
-            InterviewSession.session_id == sid
-        ).first()
-        db_sess.status = "completed"
-        db_sess.completed_at = datetime.utcnow()
+        db_session.status = "completed"
+        db_session.completed_at = datetime.now(timezone.utc)
         db.commit()
 
         del _states[sid]

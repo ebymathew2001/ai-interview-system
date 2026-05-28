@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -25,7 +25,7 @@ class InterviewSession(Base):
     status           = Column(String(20), default="in_progress")   # in_progress | completed
     current_question = Column(Integer,   default=0)
     total_questions  = Column(Integer,   nullable=False)
-    started_at       = Column(DateTime,  default=datetime.utcnow)
+    started_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at     = Column(DateTime,  nullable=True)
 
     candidate = relationship("Candidate", back_populates="sessions")
@@ -59,3 +59,4 @@ class Report(Base):
     weaknesses          = Column(Text,       nullable=False)
 
     session = relationship("InterviewSession", back_populates="report")
+

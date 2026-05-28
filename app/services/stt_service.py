@@ -2,6 +2,9 @@ import os
 import tempfile
 from sarvamai import SarvamAI
 from app.core.config import settings
+from pathlib import Path
+import tempfile
+from fastapi import HTTPException
 
 client = SarvamAI(api_subscription_key=settings.sarvam_api_key)
 
@@ -12,7 +15,7 @@ async def transcribe_audio(audio_bytes: bytes, filename: str) -> str:
 
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(audio_bytes)
-        tmp_path = tmp.name
+        tmp_path = None 
 
     try:
         with open(tmp_path, "rb") as f:
@@ -24,6 +27,7 @@ async def transcribe_audio(audio_bytes: bytes, filename: str) -> str:
         return response.transcript
     except Exception as e:
         print(f"STT error: {e}")
-        return "Could not transcribe audio. Please try again."
+        raise HTTPException(status_code=502, detail="STT service unavailable") 
     finally:
-        os.unlink(tmp_path)
+        if tmp_path:  
+            Path(tmp_path).unlink(missing_ok=True)
