@@ -70,3 +70,12 @@ class ReportResponse(BaseModel):
     weaknesses:         str
     total_questions:    int
     answers:            list[dict]
+
+
+
+class SaveAnswerRequest(BaseModel):
+    question_index: int
+    question_text:  str
+    answer_text:    str
+    score:          float
+    feedback:       str
