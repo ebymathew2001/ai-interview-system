@@ -60,3 +60,9 @@ class Report(Base):
 
     session = relationship("InterviewSession", back_populates="report")
 
+class InterviewStateModel(Base):
+    __tablename__ = "interview_states"
+
+    session_id = Column(String, primary_key=True)
+    state_json = Column(Text, nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

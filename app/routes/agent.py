@@ -2,23 +2,48 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.models.models import InterviewSession, QuestionAnswer, Report
+from app.models.models import InterviewSession, InterviewStateModel, QuestionAnswer, Report
 from app.schemas.schemas import AgentRespondRequest, AgentRespondResponse
 from app.graph.state import InterviewState
 from app.graph.graph import interview_graph
+import json
 
 router = APIRouter()
 
-# In-memory state store.  Key: session_id  Value: InterviewState
-_states: dict[str, InterviewState] = {}
 
+def _save_state(db: Session, sid: str, state: InterviewState) -> None:
+    row = db.query(InterviewStateModel).filter(
+        InterviewStateModel.session_id == sid
+    ).first()
+    if row:
+        row.state_json = json.dumps(state)
+    else:
+        db.add(InterviewStateModel(
+            session_id=sid,
+            state_json=json.dumps(state)
+        ))
+    db.commit()
+
+def _get_state(db: Session, sid: str) -> InterviewState | None:
+    row = db.query(InterviewStateModel).filter(
+        InterviewStateModel.session_id == sid
+    ).first()
+    if row:
+        return json.loads(row.state_json)
+    return None
+
+def _delete_state(db: Session, sid: str) -> None:
+    db.query(InterviewStateModel).filter(
+        InterviewStateModel.session_id == sid
+    ).delete()
+    db.commit()
 
 @router.post("/respond", response_model=AgentRespondResponse, summary="Central interview loop")
 async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_db)) -> AgentRespondResponse:
     sid = payload.session_id
 
     # ── FIRST CALL:
-    if sid not in _states:
+    if _get_state(db, sid) is None:
         db_session = db.query(InterviewSession).filter(
             InterviewSession.session_id == sid
         ).first()
@@ -45,7 +70,7 @@ async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_
     }
         #invoke
         state = interview_graph.invoke(initial)
-        _states[sid] = state
+        _save_state(db, sid, state)
 
         return AgentRespondResponse(
             question_text=state["current_question"],
@@ -54,7 +79,7 @@ async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_
         )
 
     # ── SUBSEQUENT CALLS: evaluate answer → decide next step ─────────────────
-    state = _states[sid]
+    state = _get_state(db, sid)
 
     if state["is_complete"]:
         raise HTTPException(status_code=400, detail="Interview already completed")
@@ -101,7 +126,7 @@ async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_
         db_session.completed_at = datetime.now(timezone.utc)
         db.commit()
 
-        del _states[sid]
+        _delete_state(db, sid)
 
         return AgentRespondResponse(
             question_text=None,
@@ -110,7 +135,7 @@ async def agent_respond(payload: AgentRespondRequest, db: Session = Depends(get_
         )
 
     
-    _states[sid] = state
+    _save_state(db, sid, state)
 
     return AgentRespondResponse(
         question_text=state["current_question"],
